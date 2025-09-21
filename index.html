@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niche Fruits Clicker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @keyframes rainbowMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        .game-container {
+            display: flex;
+            min-height: 100vh;
+            margin-right: 250px;
+        }
+        
+        .global-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .global-title {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .global-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .global-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .global-value {
+            color: #ffd700;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+        
+        .left-panel {
+            flex: 1;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .center-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .right-panel {
+            flex: 1;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #ffd700;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .stats-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .stat-value {
+            color: #ffd700;
+            font-weight: 800;
+        }
+        
+        .main-fruit {
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin: 30px 0;
+        }
+        
+        .main-fruit:hover {
+            transform: scale(1.05);
+        }
+        
+        .main-fruit:active {
+            transform: scale(0.95);
+        }
+        
+        .fruit-emoji {
+            font-size: 12rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .shop-item {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .shop-item.affordable {
+            border: 2px solid rgba(0, 255, 127, 0.5);
+            background: rgba(0, 255, 127, 0.1);
+        }
+        
+        .shop-item.expensive {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 127, 0.95);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideInDown 0.3s ease;
+        }
+        
+        @keyframes slideInDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+        
+        .event-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 120px;
+            height: 60px;
+            background: rgba(0, 100, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            color: #fff;
+            text-align: center;
+            z-index: 10001;
+            font-size: 12px;
+            padding: 5px;
+            display: none;
+        }
+        
+        .event-indicator.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .falling-item {
+            position: fixed;
+            z-index: 9999;
+            font-size: 3rem;
+            cursor: pointer;
+            animation: fall 5s linear forwards;
+            user-select: none;
+        }
+        
+        @keyframes fall {
+            0% {
+                opacity: 1;
+                transform: translateY(-100px) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        .admin-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 10010;
+            color: #fff;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .admin-panel.visible {
+            display: block;
+        }
+        
+        .admin-title {
+            color: #ff0000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .admin-section {
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .admin-button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .admin-button:hover {
+            background: linear-gradient(135deg, #cc0000, #990000);
+        }
+        
+        .section-title {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        .event-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #feca57);
+            background-size: 300% 100%;
+            animation: rainbowMove 3s linear infinite;
+            padding: 15px;
+            text-align: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10000;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .download-section {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10002;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6);
+            background: linear-gradient(135deg, #00cc6a, #00aa55);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0px);
+        }
+        
+        .version-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 12px;
+            z-index: 10002;
+        }
+        
+        .pwa-install {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            padding: 30px;
+            color: #fff;
+            text-align: center;
+            z-index: 10020;
+            display: none;
+            max-width: 400px;
+        }
+        
+        .pwa-install.visible {
+            display: block;
+        }
+        
+        .pwa-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        
+        .pwa-description {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .pwa-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .pwa-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .pwa-install-btn {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .pwa-cancel-btn {
+            background: #666;
+            color: #fff;
+        }
+        
+        .current-world {
+            border: 2px solid #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+        
+        .current-fruit {
+            border: 2px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .rebirth-button {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .rebirth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+        
+        .rebirth-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Download Section -->
+    <div class="download-section">
+        <button class="download-btn" onclick="showDownloadOptions()">
+            <span>📱</span>
+            <span>DESCARGAR JUEGO</span>
+        </button>
+    </div>
+    
+    <!-- Version Info -->
+    <div class="version-info">
+        <div>🎮 Niche Fruits Clicker v2.1</div>
+        <div>🌍 Global Events Edition</div>
+        <div>👥 Jugadores online: <span id="onlinePlayers">1,337</span></div>
+    </div>
+    
+    <!-- PWA Install Popup -->
+    <div class="pwa-install" id="pwaInstall">
+        <div class="pwa-title">🎮 Instalar Niche Fruits Clicker</div>
+        <div class="pwa-description">
+            ¡Juega sin conexión! Instala el juego en tu dispositivo para:
+            <br><br>
+            ✅ Acceso rápido desde escritorio<br>
+            ✅ Funciona sin internet<br>
+            ✅ Notificaciones de eventos globales<br>
+            ✅ Mejor rendimiento<br>
+        </div>
+        <div class="pwa-buttons">
+            <button class="pwa-btn pwa-install-btn" onclick="installPWA()">📱 INSTALAR</button>
+            <button class="pwa-btn pwa-cancel-btn" onclick="closePWAInstall()">❌ Cancelar</button>
+        </div>
+    </div>
+    
+    <div class="event-indicator" id="eventIndicator">
+        <div style="font-size: 24px;" id="eventIcon">🎉</div>
+        <div>CUSTOM EVENT</div>
+        <div style="color: #ffff00;" id="eventTimer">0:00</div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-title">ADMIN PANEL</div>
+        
+        <div class="admin-section">
+            <h4>🎉 Global Events (Admin Only)</h4>
+            <button class="admin-button" onclick="startGlobalEvent('golden_rain')">🟡 Golden Rain (3min)</button>
+            <button class="admin-button" onclick="startGlobalEvent('token_storm')">🪙 Token Storm (2min)</button>
+            <button class="admin-button" onclick="startGlobalEvent('mutation_blast')">🧬 DNA Blast (4min)</button>
+            <button class="admin-button" onclick="startGlobalEvent('rainbow_festival')">🌈 Rainbow Mix (5min)</button>
+            <button class="admin-button" onclick="startGlobalEvent('mega_boost')">⚡ Mega Boost (1min)</button>
+            <button class="admin-button" onclick="stopGlobalEvent()" style="background: #666;">🛑 Stop Event</button>
+        </div>
+        
+        <div class="admin-section">
+            <h4>🌍 Auto Global Events</h4>
+            <button class="admin-button" onclick="toggleAutoEvents()">Toggle Auto Events (Every 10min)</button>
+            <button class="admin-button" onclick="forceAutoEvent()">Force Next Auto Event</button>
+            <button class="admin-button" onclick="showEventStatus()">Show Event Status</button>
+        </div>
+        
+        <div class="admin-section">
+            <h4>Resources</h4>
+            <button class="admin-button" onclick="addFruits()">+1000 Frutas</button>
+            <button class="admin-button" onclick="addTokens()">+10 Tokens</button>
+        </div>
+        
+        <button class="admin-button" onclick="closePanel()">Close Panel</button>
+    </div>
+
+    <div class="global-bar">
+        <div class="global-title">GLOBAL CURRENCIES</div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">📦</div>
+            <div class="global-name">Token Chests</div>
+            <div class="global-value" id="tokenChests">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🌮</div>
+            <div class="global-name">Tortillas</div>
+            <div class="global-value" id="tortillas">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🐱</div>
+            <div class="global-name">Cats</div>
+            <div class="global-value" id="cats">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🧬</div>
+            <div class="global-name">Mutations</div>
+            <div class="global-value" id="mutations">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🌍</div>
+            <div class="global-name">Global Currency</div>
+            <div class="global-value" id="globalCurrency">0</div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="left-panel">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span>Frutas:</span>
+                    <span class="stat-value" id="fruits">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Por Segundo:</span>
+                    <span class="stat-value" id="fruitPerSecond">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Por Click:</span>
+                    <span class="stat-value" id="fruitPerClick">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>Tokens:</span>
+                    <span class="stat-value" id="tokens">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Renacimientos:</span>
+                    <span class="stat-value" id="rebirths">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Puntos Renac.:</span>
+                    <span class="stat-value" id="rebirthPoints">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Multiplicador:</span>
+                    <span class="stat-value" id="rebirthMultiplier">1.0x</span>
+                </div>
+            </div>
+            
+            <!-- Rebirth Section -->
+            <div class="stats-container">
+                <h3 style="color: #ffd700; text-align: center; margin-bottom: 15px;">RENACIMIENTO</h3>
+                <button id="rebirthButton" class="rebirth-button" onclick="performRebirth()" disabled>
+                    <span>🔄</span>
+                    <span>RENACER (+<span id="rebirthPointsGain">0</span> PR)</span>
+                </button>
+                <div style="color: #ccc; text-align: center; font-size: 0.9rem;" id="rebirthRequirement">
+                    Necesitas 100,000 frutas totales
+                </div>
+            </div>
+        </div>
+        
+        <div class="center-panel">
+            <h1>Niche Fruits Clicker</h1>
+            <div class="subtitle">Imperio de Frutas Exoticas</div>
+            <div class="main-fruit" id="mainFruit">
+                <div class="fruit-emoji">🥭</div>
+            </div>
+            <div style="color: #fff; text-align: center; font-size: 1.2rem;">
+                <p><strong>HAZ CLICK EN LA FRUTA</strong></p>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="section-title">Productores</div>
+            <div id="producerShop">
+                <div>Cargando...</div>
+            </div>
+            
+            <div class="section-title">Renacimiento</div>
+            <div id="rebirthShop">
+                <div>Haz tu primer renacimiento para desbloquear</div>
+            </div>
+            
+            <div class="section-title">Mundos</div>
+            <div id="worldSelector">
+                <div>Desbloquea mundos con renacimientos</div>
+            </div>
+            
+            <div class="section-title">Frutas</div>
+            <div id="fruitSelector">
+                <div>Desbloquea frutas con renacimientos</div>
+            </div>
+            
+            <div class="section-title">Cofres de Tokens</div>
+            <div class="shop-item affordable" onclick="buyChest('basic')">
+                <div style="font-size: 2rem; margin-right: 12px;">📦</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Cofre Basico</div>
+                    <div style="color: #ccc;">1 token chest + 1 tortilla</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyChest('rare')">
+                <div style="font-size: 2rem; margin-right: 12px;">🎁</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Cofre Raro</div>
+                    <div style="color: #ccc;">3 token chests + 2 tortillas</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Mutaciones</div>
+            <div class="shop-item affordable" onclick="buyMutation('click')">
+                <div style="font-size: 2rem; margin-right: 12px;">👆</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Click Power</div>
+                    <div style="color: #ccc;">10 mutaciones</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Tienda Global</div>
+            <div class="shop-item affordable" onclick="buyGlobal('tokenChest')">
+                <div style="font-size: 2rem; margin-right: 12px;">📦</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Token Chest</div>
+                    <div style="color: #ccc;">100 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('tortilla')">
+                <div style="font-size: 2rem; margin-right: 12px;">🌮</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Tortilla</div>
+                    <div style="color: #ccc;">200 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('mutation')">
+                <div style="font-size: 2rem; margin-right: 12px;">🧬</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Mutacion</div>
+                    <div style="color: #ccc;">500 frutas</div>
+                </div>
+            </div>fff; font-weight: bold;">Cofre Raro</div>
+                    <div style="color: #ccc;">3 token chests + 2 tortillas</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Mutaciones</div>
+            <div class="shop-item affordable" onclick="buyMutation('click')">
+                <div style="font-size: 2rem; margin-right: 12px;">👆</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Click Power</div>
+                    <div style="color: #ccc;">10 mutaciones</div>
+                </div>
+            </div>
+            
+            <div class="section-title">Tienda Global</div>
+            <div class="shop-item affordable" onclick="buyGlobal('tokenChest')">
+                <div style="font-size: 2rem; margin-right: 12px;">📦</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Token Chest</div>
+                    <div style="color: #ccc;">100 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('tortilla')">
+                <div style="font-size: 2rem; margin-right: 12px;">🌮</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Tortilla</div>
+                    <div style="color: #ccc;">200 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('mutation')">
+                <div style="font-size: 2rem; margin-right: 12px;">🧬</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Mutacion</div>
+                    <div style="color: #ccc;">500 frutas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameData = {
+            fruits: 0,
+            totalFruits: 0,
+            tokens: 0,
+            tokenChests: 0,
+            tortillas: 0,
+            cats: 0,
+            mutations: 0,
+            globalCurrency: 0,
+            producers: {},
+            multiplier: 1,
+            // Rebirth System
+            rebirths: 0,
+            currentWorld: 0,
+            currentFruitType: 0,
+            unlockedWorlds: [0],
+            unlockedFruits: [0],
+            rebirthPoints: 0,
+            rebirthMultiplier: 1,
+            // Global Events System
+            globalEventActive: false,
+            eventType: '',
+            eventStart: 0,
+            eventDuration: 0,
+            eventInterval: null,
+            eventTimer: null,
+            // Auto Events (every 10 minutes)
+            autoEventsActive: false,
+            lastAutoEventCheck: 0
+        };
+
+        let producerList = [
+            { id: 'farmer', name: 'Granjero', emoji: '👨‍🌾', price: 15, production: 0.1 },
+            { id: 'tree', name: 'Arbol', emoji: '🌳', price: 100, production: 1 },
+            { id: 'orchard', name: 'Huerto', emoji: '🍎', price: 1100, production: 8 },
+            { id: 'plantation', name: 'Plantacion', emoji: '🏞️', price: 12000, production: 47 },
+            { id: 'factory', name: 'Fabrica', emoji: '🏭', price: 130000, production: 260 },
+            { id: 'laboratory', name: 'Laboratorio', emoji: '🧪', price: 1400000, production: 1400 }
+        ];
+
+        // Rebirth and World System
+        let worldData = [
+            { 
+                id: 0, 
+                name: 'Mundo Tropical', 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                unlockCost: 0 
+            },
+            { 
+                id: 1, 
+                name: 'Huerto Clasico', 
+                background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+                unlockCost: 1 
+            },
+            { 
+                id: 2, 
+                name: 'Jardin Citrico', 
+                background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                unlockCost: 2 
+            },
+            { 
+                id: 3, 
+                name: 'Dimension Mistica', 
+                background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                unlockCost: 3 
+            }
+        ];
+
+        let fruitTypes = [
+            { id: 0, emoji: '🥭', name: 'Mango', world: 0, unlockCost: 0 },
+            { id: 1, emoji: '🍎', name: 'Manzana', world: 1, unlockCost: 1 },
+            { id: 2, emoji: '🍐', name: 'Pera', world: 1, unlockCost: 1 },
+            { id: 3, emoji: '🍊', name: 'Naranja', world: 2, unlockCost: 2 },
+            { id: 4, emoji: '🍋', name: 'Limon', world: 2, unlockCost: 2 },
+            { id: 5, emoji: '🍇', name: 'Uvas', world: 3, unlockCost: 3 },
+            { id: 6, emoji: '🫐', name: 'Arandanos', world: 3, unlockCost: 3 }
+        ];
+
+        let rebirthUpgrades = [
+            { id: 0, name: 'Multiplicador Base', cost: 1, effect: 0.1, owned: 0 },
+            { id: 1, name: 'Boost Productor', cost: 2, effect: 0.05, owned: 0 },
+            { id: 2, name: 'Suerte Token', cost: 3, effect: 0.001, owned: 0 },
+            { id: 3, name: 'Velocidad Auto', cost: 5, effect: 0.1, owned: 0 }
+        ];
+
+        // Rebirth System Functions
+        function canRebirth() {
+            return gameData.totalFruits >= 100000; // 100K fruits required for first rebirth
+        }
+
+        function calculateRebirthPoints() {
+            if (!canRebirth()) return 0;
+            return Math.floor(Math.sqrt(gameData.totalFruits / 10000));
+        }
+
+        function performRebirth() {
+            if (!canRebirth()) {
+                showNotification('Necesitas 100,000 frutas totales para renacer');
+                return;
+            }
+
+            let points = calculateRebirthPoints();
+            
+            // Reset progress but keep rebirth progress
+            gameData.fruits = 0;
+            gameData.totalFruits = 0;
+            gameData.tokens = 0;
+            gameData.producers = {};
+            gameData.multiplier = 1;
+            
+            // Add rebirth rewards
+            gameData.rebirths++;
+            gameData.rebirthPoints += points;
+            
+            // Unlock worlds based on rebirths
+            if (gameData.rebirths >= 4) {
+                // Unlock all worlds at rebirth 4
+                gameData.unlockedWorlds = [0, 1, 2, 3];
+                gameData.unlockedFruits = [0, 1, 2, 3, 4, 5, 6];
+            } else if (gameData.rebirths >= 3) {
+                gameData.unlockedWorlds = [0, 1, 2];
+                gameData.unlockedFruits = [0, 1, 2, 3, 4];
+            } else if (gameData.rebirths >= 2) {
+                gameData.unlockedWorlds = [0, 1];
+                gameData.unlockedFruits = [0, 1, 2];
+            } else if (gameData.rebirths >= 1) {
+                gameData.unlockedWorlds = [0, 1];
+                gameData.unlockedFruits = [0, 1];
+            }
+            
+            // Calculate rebirth multiplier
+            calculateRebirthMultiplier();
+            
+            // Update display
+            updateWorldBackground();
+            renderProducers();
+            updateDisplay();
+            
+            showNotification(`¡RENACIMIENTO ${gameData.rebirths}! +${points} Puntos de Renacimiento`);
+            
+            if (gameData.rebirths === 4) {
+                showNotification('🌍 ¡TODOS LOS MUNDOS DESBLOQUEADOS! ¡Cambia de frutas y mundos!');
+            }
+        }
+
+        function calculateRebirthMultiplier() {
+            let multiplier = 1;
+            
+            // Base multiplier from upgrades
+            multiplier += rebirthUpgrades[0].owned * rebirthUpgrades[0].effect;
+            
+            // Rebirth count bonus
+            multiplier += gameData.rebirths * 0.1;
+            
+            gameData.rebirthMultiplier = multiplier;
+        }
+
+        function buyRebirthUpgrade(upgradeId) {
+            let upgrade = rebirthUpgrades[upgradeId];
+            let cost = upgrade.cost + upgrade.owned * 2; // Increasing cost
+            
+            if (gameData.rebirthPoints >= cost) {
+                gameData.rebirthPoints -= cost;
+                upgrade.owned++;
+                
+                calculateRebirthMultiplier();
+                updateDisplay();
+                renderRebirthShop();
+                
+                showNotification(`${upgrade.name} mejorado! Nivel ${upgrade.owned}`);
+            } else {
+                showNotification(`Necesitas ${cost} puntos de renacimiento`);
+            }
+        }
+
+        function switchWorld(worldId) {
+            if (!gameData.unlockedWorlds.includes(worldId)) {
+                showNotification('Mundo no desbloqueado');
+                return;
+            }
+            
+            gameData.currentWorld = worldId;
+            updateWorldBackground();
+            showNotification(`Cambiado al ${worldData[worldId].name}`);
+        }
+
+        function switchFruit(fruitId) {
+            if (!gameData.unlockedFruits.includes(fruitId)) {
+                showNotification('Fruta no desbloqueada');
+                return;
+            }
+            
+            gameData.currentFruitType = fruitId;
+            updateFruitDisplay();
+            showNotification(`Cambiado a ${fruitTypes[fruitId].name}!`);
+        }
+
+        function updateWorldBackground() {
+            let world = worldData[gameData.currentWorld];
+            if (world) {
+                document.body.style.background = world.background;
+            }
+        }
+
+        function updateFruitDisplay() {
+            let fruit = fruitTypes[gameData.currentFruitType];
+            if (fruit) {
+                let fruitEmoji = document.querySelector('.fruit-emoji');
+                if (fruitEmoji) {
+                    fruitEmoji.textContent = fruit.emoji;
+                }
+            }
+        }
+
+        function renderRebirthShop() {
+            let container = document.getElementById('rebirthShop');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            rebirthUpgrades.forEach(upgrade => {
+                let cost = upgrade.cost + upgrade.owned * 2;
+                let canAfford = gameData.rebirthPoints >= cost;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (canAfford ? 'affordable' : 'expensive');
+                
+                div.innerHTML = `
+                    <div style="font-size: 2rem; margin-right: 12px;">⭐</div>
+                    <div>
+                        <div style="font-weight: 700; color: #fff;">${upgrade.name}</div>
+                        <div style="color: #ccc; font-size: 0.9rem;">Costo: ${cost} PR - Nivel: ${upgrade.owned}</div>
+                        <div style="color: #ffd700; font-size: 0.8rem;">Efecto: +${(upgrade.effect * 100).toFixed(1)}%</div>
+                    </div>
+                `;
+                
+                if (canAfford) {
+                    div.onclick = () => buyRebirthUpgrade(upgrade.id);
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function renderWorldSelector() {
+            let container = document.getElementById('worldSelector');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            worldData.forEach(world => {
+                let isUnlocked = gameData.unlockedWorlds.includes(world.id);
+                let isCurrent = gameData.currentWorld === world.id;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (isUnlocked ? (isCurrent ? 'current-world' : 'affordable') : 'expensive');
+                
+                let statusText = isCurrent ? '✓ ACTUAL' : (isUnlocked ? 'DISPONIBLE' : `Renac. ${world.unlockCost}`);
+                
+                div.innerHTML = `
+                    <div style="font-size: 2rem; margin-right: 12px;">🌍</div>
+                    <div>
+                        <div style="font-weight: 700; color: #fff;">${world.name}</div>
+                        <div style="color: #ccc; font-size: 0.9rem;">${statusText}</div>
+                    </div>
+                `;
+                
+                if (isUnlocked && !isCurrent) {
+                    div.onclick = () => switchWorld(world.id);
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function renderFruitSelector() {
+            let container = document.getElementById('fruitSelector');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            fruitTypes.forEach(fruit => {
+                let isUnlocked = gameData.unlockedFruits.includes(fruit.id);
+                let isCurrent = gameData.currentFruitType === fruit.id;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (isUnlocked ? (isCurrent ? 'current-fruit' : 'affordable') : 'expensive');
+                
+                let statusText = isCurrent ? '✓ ACTUAL' : (isUnlocked ? 'DISPONIBLE' : `Renac. ${fruit.unlockCost}`);
+                
+                div.innerHTML = `
+                    <div style="font-size: 2rem; margin-right: 12px;">${fruit.emoji}</div>
+                    <div>
+                        <div style="font-weight: 700; color: #fff;">${fruit.name}</div>
+                        <div style="color: #ccc; font-size: 0.9rem;">${statusText}</div>
+                    </div>
+                `;
+                
+                if (isUnlocked && !isCurrent) {
+                    div.onclick = () => switchFruit(fruit.id);
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        // Global Event Definitions
+        let globalEventTypes = {
+            taco_rain: {
+                name: 'Taco Rain',
+                icon: '🌮',
+                duration: 300000, // 5 minutes
+                description: 'Global Taco Rain - Click tacos for +1 tortilla each',
+                spawnRate: 2000,
+                reward: { type: 'tortillas', amount: 1 }
+            },
+            cat_storm: {
+                name: 'Cat Storm', 
+                icon: '🐱',
+                duration: 300000, // 5 minutes
+                description: 'Global Cat Storm - Click cats for +1 cat each',
+                spawnRate: 2500,
+                reward: { type: 'cats', amount: 1 }
+            },
+            golden_rain: {
+                name: 'Golden Rain',
+                icon: '🟡', 
+                duration: 180000, // 3 minutes
+                description: 'Admin Golden Rain - Click orbs for +100 fruits each',
+                spawnRate: 1500,
+                reward: { type: 'fruits', amount: 100 }
+            },
+            token_storm: {
+                name: 'Token Storm',
+                icon: '🪙',
+                duration: 120000, // 2 minutes  
+                description: 'Admin Token Storm - Click tokens for +1 token each',
+                spawnRate: 2000,
+                reward: { type: 'tokens', amount: 1 }
+            },
+            mutation_blast: {
+                name: 'Mutation Blast',
+                icon: '🧬',
+                duration: 240000, // 4 minutes
+                description: 'Admin DNA Blast - Click DNA for +5 mutations each', 
+                spawnRate: 1800,
+                reward: { type: 'mutations', amount: 5 }
+            },
+            rainbow_festival: {
+                name: 'Rainbow Festival',
+                icon: '🌈',
+                duration: 300000, // 5 minutes
+                description: 'Admin Rainbow Mix - Click for random rewards',
+                spawnRate: 1200,
+                reward: { type: 'mixed', amount: 1 }
+            },
+            mega_boost: {
+                name: 'Mega Boost',
+                icon: '⚡',
+                duration: 60000, // 1 minute
+                description: 'Admin Mega Boost - Click lightning for x10 multiplier',
+                spawnRate: 3000,
+                reward: { type: 'multiplier', amount: 10 }
+            }
+        };
+
+        // Click en la fruta
+        function clickFruit() {
+            let power = gameData.multiplier * gameData.rebirthMultiplier;
+            gameData.fruits += power;
+            gameData.totalFruits += power;
+            updateDisplay();
+            
+            // Random token (improved with rebirth upgrades)
+            let tokenChance = 0.001 + (rebirthUpgrades[2].owned * rebirthUpgrades[2].effect);
+            if (Math.random() < tokenChance) {
+                gameData.tokens++;
+                showNotification('Token encontrado!');
+            }
+            
+            // Random multiplier
+            if (Math.random() < 0.01) {
+                let mult = [2, 3, 4][Math.floor(Math.random() * 3)];
+                gameData.multiplier *= mult;
+                showNotification('Mutacion ' + mult + 'x! Total: ' + gameData.multiplier + 'x');
+            }
+            
+            // Efecto visual
+            showEffect('+' + Math.floor(power));
+        }
+
+        function getProduction() {
+            let total = 0;
+            let rebirthBoost = 1 + (rebirthUpgrades[1].owned * rebirthUpgrades[1].effect);
+            let speedBoost = 1 + (rebirthUpgrades[3].owned * rebirthUpgrades[3].effect);
+            
+            producerList.forEach(p => {
+                let owned = gameData.producers[p.id] || 0;
+                total += owned * p.production * rebirthBoost * speedBoost * gameData.rebirthMultiplier;
+            });
+            return total;
+        }
+
+        function renderProducers() {
+            let container = document.getElementById('producerShop');
+            container.innerHTML = '';
+            
+            producerList.forEach(producer => {
+                let owned = gameData.producers[producer.id] || 0;
+                let cost = Math.floor(producer.price * Math.pow(1.15, owned));
+                let canAfford = gameData.fruits >= cost;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (canAfford ? 'affordable' : 'expensive');
+                
+                div.innerHTML = '<div style="font-size: 2rem; margin-right: 12px;">' + producer.emoji + '</div>' +
+                               '<div>' +
+                               '<div style="font-weight: 700; color: #fff;">' + producer.name + '</div>' +
+                               '<div style="color: #ccc; font-size: 0.9rem;">' + formatNumber(cost) + ' frutas - Owned: ' + owned + '</div>' +
+                               '</div>';
+                
+                if (canAfford) {
+                    div.onclick = () => buyProducer(producer.id);
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function buyProducer(id) {
+            let producer = producerList.find(p => p.id === id);
+            if (!producer) return;
+            
+            let owned = gameData.producers[id] || 0;
+            let cost = Math.floor(producer.price * Math.pow(1.15, owned));
+            
+            if (gameData.fruits >= cost) {
+                gameData.fruits -= cost;
+                gameData.producers[id] = owned + 1;
+                showNotification(producer.name + ' comprado!');
+                renderProducers();
+                updateDisplay();
+            }
+        }
+
+        function buyChest(type) {
+            let chests = {
+                basic: { tokenCost: 1, tortillaCost: 1, tokenReward: 3, tortillaReward: 1 },
+                rare: { tokenCost: 3, tortillaCost: 2, tokenReward: 8, tortillaReward: 2 }
+            };
+            
+            let chest = chests[type];
+            if (!chest) return;
+            
+            if (gameData.tokenChests >= chest.tokenCost && gameData.tortillas >= chest.tortillaCost) {
+                gameData.tokenChests -= chest.tokenCost;
+                gameData.tortillas -= chest.tortillaCost;
+                gameData.mutations += chest.tokenReward;
+                showNotification('Cofre abierto! +' + chest.tokenReward + ' mutaciones');
+                updateDisplay();
+            } else {
+                showNotification('No tienes suficientes recursos');
+            }
+        }
+
+        function buyMutation(type) {
+            if (gameData.mutations >= 10) {
+                gameData.mutations -= 10;
+                gameData.multiplier += 1;
+                showNotification('Mutacion de click comprada! +1 multiplicador');
+                updateDisplay();
+            } else {
+                showNotification('Necesitas 10 mutaciones');
+            }
+        }
+
+        function buyGlobal(type) {
+            if (type === 'tokenChest' && gameData.fruits >= 100) {
+                gameData.fruits -= 100;
+                gameData.tokenChests++;
+                showNotification('Token Chest comprado!');
+            } else if (type === 'tortilla' && gameData.fruits >= 200) {
+                gameData.fruits -= 200;
+                gameData.tortillas++;
+                showNotification('Tortilla comprada!');
+            } else if (type === 'mutation' && gameData.fruits >= 500) {
+                gameData.fruits -= 500;
+                gameData.mutations++;
+                showNotification('Mutacion comprada!');
+            } else {
+                showNotification('No tienes suficientes frutas');
+            }
+            updateDisplay();
+            renderProducers();
+        }
+
+        function showEffect(text) {
+            // Simple console log for click effect
+            console.log(text);
+        }
+
+        function updateDisplay() {
+            document.getElementById('fruits').textContent = formatNumber(gameData.fruits);
+            document.getElementById('fruitPerSecond').textContent = formatNumber(getProduction());
+            document.getElementById('fruitPerClick').textContent = Math.floor(gameData.multiplier * gameData.rebirthMultiplier);
+            document.getElementById('tokens').textContent = gameData.tokens;
+            document.getElementById('tokenChests').textContent = gameData.tokenChests;
+            document.getElementById('tortillas').textContent = gameData.tortillas;
+            document.getElementById('cats').textContent = gameData.cats;
+            document.getElementById('mutations').textContent = gameData.mutations;
+            document.getElementById('globalCurrency').textContent = gameData.globalCurrency;
+            
+            // Rebirth display
+            document.getElementById('rebirths').textContent = gameData.rebirths;
+            document.getElementById('rebirthPoints').textContent = gameData.rebirthPoints;
+            document.getElementById('rebirthMultiplier').textContent = gameData.rebirthMultiplier.toFixed(1) + 'x';
+            
+            // Update rebirth button
+            let canRebirthNow = canRebirth();
+            let rebirthButton = document.getElementById('rebirthButton');
+            let rebirthPointsGain = document.getElementById('rebirthPointsGain');
+            let rebirthRequirement = document.getElementById('rebirthRequirement');
+            
+            if (rebirthButton) {
+                rebirthButton.disabled = !canRebirthNow;
+                if (canRebirthNow) {
+                    rebirthButton.style.opacity = '1';
+                } else {
+                    rebirthButton.style.opacity = '0.5';
+                }
+            }
+            
+            if (rebirthPointsGain) {
+                rebirthPointsGain.textContent = calculateRebirthPoints();
+            }
+            
+            if (rebirthRequirement) {
+                if (canRebirthNow) {
+                    rebirthRequirement.textContent = 'Listo para renacer!';
+                    rebirthRequirement.style.color = '#00ff88';
+                } else {
+                    let needed = 100000 - gameData.totalFruits;
+                    rebirthRequirement.textContent = `Faltan ${formatNumber(needed)} frutas totales`;
+                    rebirthRequirement.style.color = '#ccc';
+                }
+            }
+            
+            // Update world and fruit displays
+            updateWorldBackground();
+            updateFruitDisplay();
+        }
+
+        function formatNumber(num) {
+            if (num < 1000) return Math.floor(num).toString();
+            if (num < 1000000) return (num / 1000).toFixed(1) + 'K';
+            return (num / 1000000).toFixed(1) + 'M';
+        }
+
+        function showNotification(text) {
+            let notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = text;
+            document.body.appendChild(notif);
+            setTimeout(() => {
+                if (notif.parentNode) {
+                    notif.remove();
+                }
+            }, 3000);
+        }
+
+        // Game Loop
+        function gameLoop() {
+            let production = getProduction();
+            if (production > 0) {
+                gameData.fruits += production;
+                gameData.totalFruits += production;
+                updateDisplay();
+            }
+            
+            // Check for auto global events
+            checkAutoGlobalEvents();
+        }
+
+        // Admin Panel Functions
+        function openAdminPanel() {
+            let pass = prompt('Password:');
+            if (pass === '龙§7#8@金*9&银♦') {
+                document.getElementById('adminPanel').classList.add('visible');
+            }
+        }
+
+        function closePanel() {
+            document.getElementById('adminPanel').classList.remove('visible');
+        }
+
+        function addFruits() {
+            gameData.fruits += 1000;
+            updateDisplay();
+            showNotification('Admin: +1000 Frutas');
+        }
+
+        function addTokens() {
+            gameData.tokens += 10;
+            updateDisplay();
+            showNotification('Admin: +10 Tokens');
+        }
+
+        // Global Events System
+        function checkAutoGlobalEvents() {
+            if (!gameData.autoEventsActive) return;
+            
+            let now = Date.now();
+            let tenMinutes = 10 * 60 * 1000;
+            
+            // Check if 10 minutes have passed since last auto event
+            if (now - gameData.lastAutoEventCheck >= tenMinutes) {
+                gameData.lastAutoEventCheck = now;
+                
+                // Alternate between taco_rain and cat_storm
+                let eventType = (Math.floor(now / tenMinutes) % 2 === 0) ? 'taco_rain' : 'cat_storm';
+                startGlobalEvent(eventType);
+            }
+        }
+
+        function startGlobalEvent(eventType) {
+            if (gameData.globalEventActive) {
+                showNotification('Ya hay un evento global activo!');
+                return;
+            }
+
+            let eventData = globalEventTypes[eventType];
+            if (!eventData) {
+                showNotification('Tipo de evento no válido');
+                return;
+            }
+
+            gameData.globalEventActive = true;
+            gameData.eventType = eventType;
+            gameData.eventStart = Date.now();
+            gameData.eventDuration = eventData.duration;
+
+            // Show indicator
+            let indicator = document.getElementById('eventIndicator');
+            if (indicator) {
+                indicator.classList.add('active');
+                let eventIcon = document.getElementById('eventIcon');
+                if (eventIcon) {
+                    eventIcon.textContent = eventData.icon;
+                }
+            }
+
+            // Show global banner
+            showGlobalEventBanner(eventData);
+
+            // Start spawning global items
+            startGlobalEventSpawning(eventData);
+
+            // Start countdown timer
+            updateGlobalEventTimer();
+            gameData.eventTimer = setInterval(updateGlobalEventTimer, 1000);
+
+            // Notify all players
+            showNotification('🌍 EVENTO GLOBAL: ' + eventData.name + ' iniciado!');
+            
+            console.log('GLOBAL EVENT STARTED: ' + eventData.name + ' - All players see this event simultaneously');
+        }
+
+        function stopGlobalEvent() {
+            if (!gameData.globalEventActive) return;
+
+            gameData.globalEventActive = false;
+
+            // Hide indicator
+            let indicator = document.getElementById('eventIndicator');
+            if (indicator) {
+                indicator.classList.remove('active');
+            }
+
+            // Stop intervals
+            if (gameData.eventInterval) {
+                clearInterval(gameData.eventInterval);
+                gameData.eventInterval = null;
+            }
+            if (gameData.eventTimer) {
+                clearInterval(gameData.eventTimer);
+                gameData.eventTimer = null;
+            }
+
+            // Remove banner
+            let banner = document.getElementById('globalEventBanner');
+            if (banner && banner.parentNode) {
+                banner.remove();
+            }
+
+            // Clean all falling items
+            document.querySelectorAll('.falling-item').forEach(item => {
+                if (item.parentNode) {
+                    item.remove();
+                }
+            });
+
+            showNotification('Evento global terminado');
+        }
+
+        function updateGlobalEventTimer() {
+            if (!gameData.globalEventActive) return;
+
+            let elapsed = Date.now() - gameData.eventStart;
+            let remaining = Math.max(0, Math.floor((gameData.eventDuration - elapsed) / 1000));
+            let minutes = Math.floor(remaining / 60);
+            let seconds = remaining % 60;
+
+            let timerEl = document.getElementById('eventTimer');
+            if (timerEl) {
+                timerEl.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+                // Change timer color as time runs out
+                if (remaining < 30) {
+                    timerEl.style.color = '#ff0000';
+                } else if (remaining < 60) {
+                    timerEl.style.color = '#ffaa00';
+                } else {
+                    timerEl.style.color = '#ffff00';
+                }
+            }
+
+            // Auto-end event when time runs out
+            if (remaining <= 0) {
+                stopGlobalEvent();
+            }
+        }
+
+        function showGlobalEventBanner(eventData) {
+            // Remove existing banner
+            let existingBanner = document.getElementById('globalEventBanner');
+            if (existingBanner && existingBanner.parentNode) {
+                existingBanner.remove();
+            }
+
+            let banner = document.createElement('div');
+            banner.id = 'globalEventBanner';
+            banner.className = 'event-banner';
+            banner.innerHTML = '🌍 EVENTO GLOBAL: ' + eventData.name + ' ' + eventData.icon + ' - ' + eventData.description + ' 🌍';
+            
+            document.body.appendChild(banner);
+
+            // Auto-remove banner after 15 seconds
+            setTimeout(() => {
+                if (banner.parentNode) {
+                    banner.remove();
+                }
+            }, 15000);
+        }
+
+        function startGlobalEventSpawning(eventData) {
+            gameData.eventInterval = setInterval(() => {
+                if (!gameData.globalEventActive) {
+                    clearInterval(gameData.eventInterval);
+                    gameData.eventInterval = null;
+                    return;
+                }
+
+                // Spawn multiple items simultaneously for global effect
+                let spawnCount = Math.floor(Math.random() * 3) + 2; // 2-4 items
+                for (let i = 0; i < spawnCount; i++) {
+                    setTimeout(() => {
+                        createGlobalEventItem(eventData);
+                    }, i * 300);
+                }
+            }, eventData.spawnRate);
+        }
+
+        function createGlobalEventItem(eventData) {
+            let item = document.createElement('div');
+            item.className = 'falling-item';
+            item.textContent = eventData.icon;
+            item.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+            item.style.top = '-100px';
+
+            // Add special glow for global events
+            item.style.filter = 'drop-shadow(0 0 15px rgba(255, 255, 255, 0.8))';
+
+            item.onclick = () => {
+                giveGlobalEventReward(eventData.reward);
+                if (item.parentNode) {
+                    item.remove();
+                }
+            };
+
+            document.body.appendChild(item);
+
+            // Auto-remove if not clicked
+            setTimeout(() => {
+                if (item.parentNode) {
+                    item.remove();
+                }
+            }, 6000);
+        }
+
+        function giveGlobalEventReward(reward) {
+            if (reward.type === 'fruits') {
+                gameData.fruits += reward.amount;
+                gameData.totalFruits += reward.amount;
+                showNotification('+' + reward.amount + ' Frutas!');
+            } else if (reward.type === 'tokens') {
+                gameData.tokens += reward.amount;
+                showNotification('+' + reward.amount + ' Token!');
+            } else if (reward.type === 'tortillas') {
+                gameData.tortillas += reward.amount;
+                showNotification('+' + reward.amount + ' Tortilla!');
+            } else if (reward.type === 'cats') {
+                gameData.cats += reward.amount;
+                showNotification('+' + reward.amount + ' Cat!');
+            } else if (reward.type === 'mutations') {
+                gameData.mutations += reward.amount;
+                showNotification('+' + reward.amount + ' Mutaciones!');
+            } else if (reward.type === 'multiplier') {
+                gameData.multiplier *= reward.amount;
+                showNotification('x' + reward.amount + ' Multiplicador! Total: ' + gameData.multiplier + 'x');
+            } else if (reward.type === 'mixed') {
+                // Random reward for rainbow festival
+                let rewards = [
+                    { type: 'fruits', amount: 75 },
+                    { type: 'tokens', amount: 1 },
+                    { type: 'mutations', amount: 3 },
+                    { type: 'tortillas', amount: 2 }
+                ];
+                let randomReward = rewards[Math.floor(Math.random() * rewards.length)];
+                giveGlobalEventReward(randomReward);
+                return;
+            }
+            updateDisplay();
+        }
+
+        function toggleAutoEvents() {
+            gameData.autoEventsActive = !gameData.autoEventsActive;
+            if (gameData.autoEventsActive) {
+                gameData.lastAutoEventCheck = Date.now();
+                showNotification('Auto eventos globales ACTIVADOS (cada 10 minutos)');
+            } else {
+                showNotification('Auto eventos globales DESACTIVADOS');
+            }
+        }
+
+        function forceAutoEvent() {
+            gameData.lastAutoEventCheck = Date.now() - (10 * 60 * 1000); // Force trigger
+            checkAutoGlobalEvents();
+        }
+
+        function showEventStatus() {
+            if (gameData.globalEventActive) {
+                let eventData = globalEventTypes[gameData.eventType];
+                let remaining = Math.ceil((gameData.eventDuration - (Date.now() - gameData.eventStart)) / 1000);
+                showNotification('Evento activo: ' + eventData.name + ' - ' + Math.floor(remaining/60) + ':' + (remaining%60) + ' restante');
+            } else {
+                let nextEventTime = gameData.autoEventsActive ? 
+                    Math.ceil(((10 * 60 * 1000) - (Date.now() - gameData.lastAutoEventCheck)) / 1000 / 60) : 0;
+                showNotification('Sin evento activo. Próximo auto evento en: ' + nextEventTime + ' minutos');
+            }
+        }
+
+        // PWA and Download System
+        let deferredPrompt;
+        let pwaSupported = false;
+
+        // PWA Installation
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaSupported = true;
+            console.log('PWA installation available');
+        });
+
+        function showDownloadOptions() {
+            // Show download popup with multiple options
+            showDownloadPopup();
+        }
+
+        function showDownloadPopup() {
+            let popup = document.createElement('div');
+            popup.id = 'downloadPopup';
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border: 3px solid #fff;
+                border-radius: 15px;
+                padding: 30px;
+                color: #fff;
+                text-align: center;
+                z-index: 10025;
+                max-width: 500px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            `;
+
+            popup.innerHTML = `
+                <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #ffd700;">
+                    📱 DESCARGAR NICHE FRUITS CLICKER
+                </div>
+                
+                <div style="margin-bottom: 20px; line-height: 1.5;">
+                    Elige tu método de descarga preferido:
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button onclick="downloadAsFile()" style="
+                        background: #00ff88;
+                        color: #000;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        💾 DESCARGAR ARCHIVO HTML
+                    </button>
+
+                    <button onclick="installPWA()" style="
+                        background: #4ecdc4;
+                        color: #000;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        📱 INSTALAR COMO APP (PWA)
+                    </button>
+
+                    <button onclick="copyToClipboard()" style="
+                        background: #ff6b6b;
+                        color: #fff;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        📋 COPIAR CÓDIGO FUENTE
+                    </button>
+
+                    <button onclick="showInstructions()" style="
+                        background: #feca57;
+                        color: #000;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        📖 VER INSTRUCCIONES
+                    </button>
+
+                    <button onclick="closeDownloadPopup()" style="
+                        background: #666;
+                        color: #fff;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#555'" onmouseout="this.style.background='#666'">
+                        ❌ Cerrar
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+        }
+
+        function downloadAsFile() {
+            // Create downloadable HTML file
+            let htmlContent = document.documentElement.outerHTML;
+            let blob = new Blob([htmlContent], { type: 'text/html' });
+            let url = URL.createObjectURL(blob);
+            
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'niche-fruits-clicker-v2.1.html';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Archivo HTML descargado! Abrelo en cualquier navegador');
+            closeDownloadPopup();
+        }
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showNotification('🎉 ¡Juego instalado como app!');
+                    } else {
+                        showNotification('Instalación cancelada');
+                    }
+                    deferredPrompt = null;
+                    closeDownloadPopup();
+                });
+            } else {
+                // Fallback instructions for PWA
+                showNotification('PWA no disponible. Usa Chrome/Edge y busca el icono + en la barra de direcciones');
+                setTimeout(() => {
+                    alert(`
+📱 INSTALAR COMO APP:
+
+🔹 ANDROID/CHROME:
+1. Toca el menú (⋮) 
+2. Selecciona "Añadir a pantalla de inicio"
+3. Confirma la instalación
+
+🔹 PC/CHROME:
+1. Busca el icono + en la barra de direcciones
+2. Click en "Instalar Niche Fruits Clicker"
+3. El juego aparecerá como app en tu escritorio
+
+🔹 IPHONE/SAFARI:
+1. Toca el icono compartir 
+2. Selecciona "Añadir a pantalla de inicio"
+3. Confirma el nombre y añade
+                    `);
+                }, 500);
+                closeDownloadPopup();
+            }
+        }
+
+        function copyToClipboard() {
+            let htmlContent = document.documentElement.outerHTML;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(htmlContent).then(() => {
+                    showNotification('Código fuente copiado al portapapeles!');
+                }).catch(() => {
+                    fallbackCopyToClipboard(htmlContent);
+                });
+            } else {
+                fallbackCopyToClipboard(htmlContent);
+            }
+            closeDownloadPopup();
+        }
+
+        function fallbackCopyToClipboard(text) {
+            let textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Código fuente copiado!');
+            } catch (err) {
+                showNotification('Error al copiar. Usa Ctrl+A, Ctrl+C manualmente');
+                // Show the source in a new window for manual copying
+                let newWindow = window.open();
+                newWindow.document.write('<pre>' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showInstructions() {
+            let instructions = `
+🎮 GUÍA COMPLETA DE DESCARGA
+
+📱 MÉTODO 1 - ARCHIVO HTML:
+• Click en "DESCARGAR ARCHIVO HTML"
+• Guarda el archivo en tu dispositivo
+• Abre con cualquier navegador
+• ¡Funciona offline!
+
+📲 MÉTODO 2 - APP (PWA):
+• Chrome/Edge: Busca el icono + en la barra
+• Safari: Menú compartir → Añadir a inicio
+• Android: Menú → Añadir a pantalla inicio
+
+💻 MÉTODO 3 - CÓDIGO FUENTE:
+• Click en "COPIAR CÓDIGO FUENTE"
+• Pega en un archivo .html
+• Guarda y abre en navegador
+• Perfecto para desarrolladores
+
+🔧 PARA DEVELOPERS:
+• Código compatible con Electron
+• Usa como base para tus proyectos
+• Compatible con todas las PWA APIs
+• Funciona 100% offline
+
+⚡ CARACTERÍSTICAS:
+• Sin dependencias externas
+• Funciona sin internet
+• Compatible con todos los navegadores
+• Guardado automático (localStorage)
+            `;
+
+            alert(instructions);
+            closeDownloadPopup();
+        }
+
+        function closeDownloadPopup() {
+            let popup = document.getElementById('downloadPopup');
+            if (popup && popup.parentNode) {
+                popup.remove();
+            }
+        }
+
+        function closePWAInstall() {
+            let pwaPopup = document.getElementById('pwaInstall');
+            if (pwaPopup) {
+                pwaPopup.classList.remove('visible');
+            }
+        }
+
+        // Online players simulation
+        function updateOnlineCount() {
+            let baseCount = 1337;
+            let variation = Math.floor(Math.random() * 200) - 100;
+            let onlineCount = baseCount + variation;
+            let element = document.getElementById('onlinePlayers');
+            if (element) {
+                element.textContent = onlineCount.toLocaleString();
+            }
+        }
+
+        // Simulate online activity
+        setInterval(updateOnlineCount, 30000); // Update every 30 seconds
+
+        // Add manifest for PWA
+        function addPWAManifest() {
+            let manifest = {
+                "name": "Niche Fruits Clicker - Global Events Edition",
+                "short_name": "FruitsClicker",
+                "description": "The ultimate fruit clicking game with global events",
+                "start_url": "./",
+                "display": "standalone",
+                "background_color": "#667eea",
+                "theme_color": "#764ba2",
+                "orientation": "portrait-primary",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml;base64," + btoa('<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg"><rect width="192" height="192" fill="#667eea"/><text x="96" y="110" font-size="100" text-anchor="middle" fill="white">🥭</text></svg>'),
+                        "sizes": "192x192",
+                        "type": "image/svg+xml"
+                    },
+                    {
+                        "src": "data:image/svg+xml;base64," + btoa('<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><rect width="512" height="512" fill="#667eea"/><text x="256" y="300" font-size="300" text-anchor="middle" fill="white">🥭</text></svg>'),
+                        "sizes": "512x512",
+                        "type": "image/svg+xml"
+                    }
+                ],
+                "categories": ["games", "entertainment"],
+                "lang": "es",
+                "dir": "ltr"
+            };
+
+            let manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            let manifestURL = URL.createObjectURL(manifestBlob);
+            
+            let link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+
+            // Add theme color
+            let themeColor = document.createElement('meta');
+            themeColor.name = 'theme-color';
+            themeColor.content = '#764ba2';
+            document.head.appendChild(themeColor);
+
+            // Add apple touch icon
+            let appleIcon = document.createElement('link');
+            appleIcon.rel = 'apple-touch-icon';
+            appleIcon.href = "data:image/svg+xml;base64," + btoa('<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="180" fill="#667eea" rx="20"/><text x="90" y="110" font-size="80" text-anchor="middle" fill="white">🥭</text></svg>');
+            document.head.appendChild(appleIcon);
+        }
+
+        // Service Worker Registration
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                let swCode = `
+                    const CACHE_NAME = 'fruits-clicker-v1';
+                    const urlsToCache = ['./', 'index.html'];
+                    
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then((cache) => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then((response) => response || fetch(event.request))
+                        );
+                    });
+                `;
+                
+                let swBlob = new Blob([swCode], {type: 'application/javascript'});
+                let swURL = URL.createObjectURL(swBlob);
+                
+                navigator.serviceWorker.register(swURL)
+                    .then(() => console.log('ServiceWorker registered'))
+                    .catch(() => console.log('ServiceWorker registration failed'));
+            }
+        }
+
+        // Shorthand functions for easier admin access
+        function startEvent(type) {
+            let eventMap = {
+                'golden': 'golden_rain',
+                'token': 'token_storm', 
+                'mutation': 'mutation_blast',
+                'rainbow': 'rainbow_festival',
+                'mega': 'mega_boost'
+            };
+            startGlobalEvent(eventMap[type] || 'golden_rain');
+        }
+
+        function stopEvent() {
+            stopGlobalEvent();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            let mainFruit = document.getElementById('mainFruit');
+            if (mainFruit) {
+                mainFruit.onclick = clickFruit;
+            }
+            
+            // Initialize rebirth system
+            calculateRebirthMultiplier();
+            
+            // Render all sections
+            renderProducers();
+            renderRebirthShop();
+            renderWorldSelector();
+            renderFruitSelector();
+            updateDisplay();
+            
+            // Start game loop
+            setInterval(gameLoop, 1000);
+            
+            // Initialize PWA features
+            addPWAManifest();
+            registerServiceWorker();
+            updateOnlineCount();
+            
+            // Initialize auto events system
+            gameData.lastAutoEventCheck = Date.now();
+            
+            console.log('🎮 Niche Fruits Clicker v2.1 - Rebirth Edition');
+            console.log('🔄 Rebirth System: Unlock worlds and fruits at different rebirth levels');
+            console.log('🌍 4 Worlds: Tropical, Classic Orchard, Citrus Garden, Mystic Dimension');
+            console.log('🍎 7 Fruits: Mango, Apple, Pear, Orange, Lemon, Grapes, Blueberries');
+            console.log('⭐ Rebirth 4: All worlds and fruits unlocked!');
+            console.log('📝 Commands: performRebirth(), switchWorld(id), switchFruit(id)');
+        });
+    </script>
+</body>
+</html>
