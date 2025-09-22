@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niche Fruits Clicker - Secret World</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            color: white;
+        }
+        
+        body.secret-world {
+            background: #000000;
+            color: #ffffff;
+        }
+        
+        .game-container {
+            display: flex;
+            min-height: 100vh;
+            margin-right: 250px;
+        }
+        
+        .global-bar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .global-title {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .global-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .global-name {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .global-value {
+            color: #ffd700;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+        
+        .left-panel, .right-panel {
+            flex: 1;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .center-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #ffd700;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+        
+        .stats-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .stat-value {
+            color: #ffd700;
+            font-weight: 800;
+        }
+        
+        .main-fruit {
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin: 30px 0;
+        }
+        
+        .main-fruit:hover {
+            transform: scale(1.05);
+        }
+        
+        .main-fruit:active {
+            transform: scale(0.95);
+        }
+        
+        .fruit-emoji {
+            font-size: 12rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .fishing-figure {
+            width: 200px;
+            height: 200px;
+            background: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Cg fill="white"%3E%3Ccircle cx="40" cy="40" r="15"/%3E%3Crect x="35" y="55" width="10" height="30"/%3E%3Crect x="30" y="85" width="20" height="8"/%3E%3Crect x="25" y="93" width="8" height="15"/%3E%3Crect x="42" y="93" width="8" height="15"/%3E%3Cline x1="45" y1="60" x2="150" y2="30" stroke="white" stroke-width="2"/%3E%3Cline x1="150" y1="30" x2="160" y2="120" stroke="white" stroke-width="1" stroke-dasharray="2,2"/%3E%3Ccircle cx="160" cy="120" r="2"/%3E%3Crect x="20" y="100" width="25" height="3"/%3E%3Crect x="20" y="103" width="3" height="15"/%3E%3Crect x="42" y="103" width="3" height="15"/%3E%3C/g%3E%3C/svg%3E') no-repeat center;
+            background-size: contain;
+            margin: 0 auto;
+            display: none;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .shop-item {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .shop-item.affordable {
+            border: 2px solid rgba(0, 255, 127, 0.5);
+            background: rgba(0, 255, 127, 0.1);
+        }
+        
+        .shop-item.expensive {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .current-world {
+            border: 2px solid #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+        
+        .current-fruit {
+            border: 2px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .section-title {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        .rebirth-button {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .rebirth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+        
+        .rebirth-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 127, 0.95);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideInDown 0.3s ease;
+        }
+        
+        .notification.error {
+            background: rgba(255, 0, 0, 0.95);
+        }
+        
+        .notification.secret {
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #fff;
+            color: #fff;
+        }
+        
+        @keyframes slideInDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1.2);
+            }
+        }
+        
+        .download-section {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10002;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6);
+        }
+        
+        .version-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 12px;
+            z-index: 10002;
+        }
+        
+        .secret-audio-controls {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            z-index: 10003;
+            display: none;
+        }
+        
+        body.secret-world .secret-audio-controls {
+            display: block;
+        }
+        
+        .audio-btn {
+            background: #333;
+            color: white;
+            border: 1px solid #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .audio-btn:hover {
+            background: #555;
+        }
+
+        .secret-password-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            padding: 30px;
+            z-index: 10015;
+            color: #fff;
+            display: none;
+            text-align: center;
+        }
+
+        .secret-password-panel.visible {
+            display: block;
+        }
+
+        .secret-password-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .secret-password-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .secret-confirm-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #000000, #333333);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .secret-confirm-btn:hover {
+            background: linear-gradient(135deg, #333333, #000000);
+        }
+
+        .secret-world-shop {
+            margin-top: 20px;
+        }
+
+        .secret-shop-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .secret-shop-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .secret-shop-item.expensive {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Secret World Countdown */
+        .secret-countdown {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #fff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+            display: none;
+        }
+
+        .secret-countdown.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Secret Audio Controls -->
+    <div class="secret-audio-controls">
+        <button class="audio-btn" onclick="toggleSecretMusic()">Música On/Off</button>
+        <button class="audio-btn" onclick="adjustSecretVolume()">Volumen</button>
+    </div>
+
+    <!-- Download Section -->
+    <div class="download-section">
+        <button class="download-btn" onclick="showDownloadOptions()">
+            <span>📱</span>
+            <span>DESCARGAR JUEGO</span>
+        </button>
+    </div>
+    
+    <!-- Version Info -->
+    <div class="version-info">
+        <div>Niche Fruits Clicker v2.5</div>
+        <div>Edición Mundo Secreto (Fixed)</div>
+    </div>
+
+    <!-- Secret Password Panel -->
+    <div class="secret-password-panel" id="secretPasswordPanel">
+        <div style="font-size: 2rem; margin-bottom: 20px;">🎣</div>
+        <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">Mundo Secreto del Pescador</div>
+        <div style="color: #ccc; margin-bottom: 20px;">
+            ¿Quieres pagar 1,000,000,000 frutas para acceder?
+        </div>
+        <div style="color: #ffd700; margin-bottom: 20px;">
+            También necesitarás la contraseña secreta...
+        </div>
+        <input type="password" class="secret-password-input" id="secretPasswordInput" placeholder="Ingresa la contraseña secreta">
+        <button class="secret-confirm-btn" onclick="attemptSecretWorldEntry()">PAGAR Y ENTRAR</button>
+        <button class="secret-confirm-btn" onclick="closeSecretPanel()">CANCELAR</button>
+    </div>
+
+    <!-- Secret World Countdown -->
+    <div id="secretCountdown" class="secret-countdown">
+        <h3 style="color: #ff6b6b; margin-bottom: 10px;">⏰ MUNDO SECRETO TEMPORAL</h3>
+        <div style="margin-bottom: 10px;">El mundo secreto se cerrará en:</div>
+        <div style="font-size: 1.5rem; color: #ffd700; font-weight: bold;" id="countdownDisplay">30d 00h 00m 00s</div>
+        <div style="margin-top: 10px; font-size: 0.8rem; color: #ccc;">Después se guardará en GitHub para siempre</div>
+    </div>
+
+    <div class="global-bar">
+        <div class="global-title">GLOBAL CURRENCIES</div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">📦</div>
+            <div class="global-name">Token Chests</div>
+            <div class="global-value" id="tokenChests">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🌮</div>
+            <div class="global-name">Tortillas</div>
+            <div class="global-value" id="tortillas">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🐱</div>
+            <div class="global-name">Cats</div>
+            <div class="global-value" id="cats">0</div>
+        </div>
+        <div class="global-item">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🧬</div>
+            <div class="global-name">Mutations</div>
+            <div class="global-value" id="mutations">0</div>
+        </div>
+        <div class="global-item" id="secretFishCounter" style="display: none;">
+            <div style="font-size: 2rem; margin-bottom: 5px;">🎣</div>
+            <div class="global-name">Peces Capturados</div>
+            <div class="global-value" id="fishCaught">0</div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="left-panel">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span>Frutas:</span>
+                    <span class="stat-value" id="fruits">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Por Segundo:</span>
+                    <span class="stat-value" id="fruitPerSecond">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Por Click:</span>
+                    <span class="stat-value" id="fruitPerClick">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>Tokens:</span>
+                    <span class="stat-value" id="tokens">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Renacimientos:</span>
+                    <span class="stat-value" id="rebirths">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Puntos Renac.:</span>
+                    <span class="stat-value" id="rebirthPoints">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Multiplicador:</span>
+                    <span class="stat-value" id="rebirthMultiplier">1.0x</span>
+                </div>
+            </div>
+            
+            <!-- Rebirth Section -->
+            <div class="stats-container">
+                <h3 style="color: #ffd700; text-align: center; margin-bottom: 15px;">RENACIMIENTO</h3>
+                <button id="rebirthButton" class="rebirth-button" onclick="performRebirth()" disabled>
+                    <span>🔄</span>
+                    <span>RENACER (+<span id="rebirthPointsGain">0</span> PR)</span>
+                </button>
+                <div style="color: #ccc; text-align: center; font-size: 0.9rem;" id="rebirthRequirement">
+                    Necesitas 100,000 frutas totales
+                </div>
+            </div>
+
+            <!-- Secret World Shop -->
+            <div id="secretWorldShop" class="secret-world-shop" style="display: none;">
+                <div class="stats-container">
+                    <h3 style="color: #ffd700; text-align: center; margin-bottom: 15px;">TIENDA SECRETA</h3>
+                    <div class="secret-shop-item" onclick="buySecretUpgrade('fishingNet')">
+                        <div>🕸️ Red de Pesca Mágica</div>
+                        <div style="color: #ffd700;">+2x Peces por click - 1000 peces</div>
+                    </div>
+                    <div class="secret-shop-item" onclick="buySecretUpgrade('goldenHook')">
+                        <div>🪝 Anzuelo Dorado</div>
+                        <div style="color: #ffd700;">+5x Producción pesquera - 5000 peces</div>
+                    </div>
+                    <button class="secret-confirm-btn" onclick="exitSecretWorld()">SALIR DEL MUNDO SECRETO</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="center-panel">
+            <h1 id="gameTitle">Niche Fruits Clicker</h1>
+            <div class="subtitle" id="gameSubtitle">Imperio de Frutas Exóticas</div>
+            <div class="main-fruit" id="mainFruit" onclick="clickFruit()">
+                <div class="fruit-emoji" id="mainFruitEmoji">🥭</div>
+                <div class="fishing-figure" id="fishingFigure"></div>
+            </div>
+            <div style="color: #fff; text-align: center; font-size: 1.2rem;">
+                <p id="clickInstruction"><strong>HAZ CLICK EN LA FRUTA</strong></p>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="section-title">Productores</div>
+            <div id="producerShop">
+                <div>Cargando...</div>
+            </div>
+            
+            <div class="section-title">Renacimiento</div>
+            <div id="rebirthShop">
+                <div>Haz tu primer renacimiento para desbloquear</div>
+            </div>
+            
+            <div class="section-title">Mundos</div>
+            <div id="worldSelector">
+                <div>Desbloquea mundos con renacimientos</div>
+            </div>
+            
+            <div class="section-title">Frutas</div>
+            <div id="fruitSelector">
+                <div>Desbloquea frutas con renacimientos</div>
+            </div>
+            
+            <div class="section-title">Tienda Global</div>
+            <div class="shop-item affordable" onclick="buyGlobal('tokenChest')">
+                <div style="font-size: 2rem; margin-right: 12px;">📦</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Token Chest</div>
+                    <div style="color: #ccc;">100 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('tortilla')">
+                <div style="font-size: 2rem; margin-right: 12px;">🌮</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Tortilla</div>
+                    <div style="color: #ccc;">200 frutas</div>
+                </div>
+            </div>
+            <div class="shop-item affordable" onclick="buyGlobal('mutation')">
+                <div style="font-size: 2rem; margin-right: 12px;">🧬</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Mutación</div>
+                    <div style="color: #ccc;">500 frutas</div>
+                </div>
+            </div>
+            
+            <!-- Secret World Access -->
+            <div id="secretWorldAccess" class="shop-item expensive" onclick="attemptSecretWorldAccess()" style="margin-top: 20px;">
+                <div style="font-size: 2rem; margin-right: 12px;">🎣</div>
+                <div>
+                    <div style="color: #fff; font-weight: bold;">Mundo Secreto</div>
+                    <div style="color: #ccc;">1,000,000,000 frutas + contraseña</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Constants
+        const SECRET_WORLD_COST = 1000000000; // 1 billion fruits
+        const SECRET_PASSWORD = 'PESCADOR2024';
+
+        // Game Data with countdown system
+        let gameData = {
+            fruits: 0,
+            totalFruits: 0,
+            tokens: 0,
+            tokenChests: 0,
+            tortillas: 0,
+            cats: 0,
+            mutations: 0,
+            producers: {},
+            multiplier: 1,
+            rebirths: 0,
+            currentWorld: 0,
+            currentFruitType: 0,
+            unlockedWorlds: [0],
+            unlockedFruits: [0],
+            rebirthPoints: 0,
+            rebirthMultiplier: 1,
+            secretWorldActive: false,
+            fishCaught: 0,
+            secretUpgrades: {
+                fishingNet: 0,
+                goldenHook: 0
+            },
+            secretWorldStartTime: null,
+            secretWorldExpired: false
+        };
+
+        // Countdown System for Secret World (30 days limit)
+        const SECRET_WORLD_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+        let countdownInterval = null;
+
+        function initializeSecretWorldTimer() {
+            if (!gameData.secretWorldStartTime) {
+                gameData.secretWorldStartTime = Date.now();
+            }
+        }
+
+        function updateCountdown() {
+            if (!gameData.secretWorldStartTime || gameData.secretWorldExpired) return;
+
+            const now = Date.now();
+            const elapsed = now - gameData.secretWorldStartTime;
+            const remaining = SECRET_WORLD_DURATION - elapsed;
+
+            if (remaining <= 0) {
+                // Secret world has expired
+                gameData.secretWorldExpired = true;
+                onSecretWorldExpired();
+                return;
+            }
+
+            // Calculate time units
+            const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            // Update display
+            const display = document.getElementById('countdownDisplay');
+            if (display) {
+                display.textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+            }
+        }
+
+        function onSecretWorldExpired() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            // Exit secret world if active
+            if (gameData.secretWorldActive) {
+                exitSecretWorld();
+            }
+
+            // Hide countdown and show expiration message
+            const countdown = document.getElementById('secretCountdown');
+            if (countdown) {
+                countdown.style.display = 'none';
+            }
+            
+            // Create GitHub archive notification
+            showGitHubArchiveNotification();
+
+            // Disable secret world access permanently
+            const secretAccess = document.getElementById('secretWorldAccess');
+            if (secretAccess) {
+                secretAccess.classList.add('expensive');
+                secretAccess.classList.remove('affordable');
+                secretAccess.onclick = () => showNotification('El mundo secreto ha expirado y se archivó en GitHub', 'error');
+                
+                // Update the text
+                const nameDiv = secretAccess.querySelector('div:nth-child(2) div:first-child');
+                const costDiv = secretAccess.querySelector('div:nth-child(2) div:last-child');
+                if (nameDiv) nameDiv.textContent = 'Mundo Secreto [ARCHIVADO]';
+                if (costDiv) costDiv.textContent = 'Disponible en GitHub';
+            }
+        }
+
+        function showGitHubArchiveNotification() {
+            // Create persistent notification about GitHub archive
+            const notification = document.createElement('div');
+            notification.className = 'notification secret';
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.95);
+                border: 3px solid #fff;
+                padding: 30px;
+                border-radius: 15px;
+                text-align: center;
+                max-width: 500px;
+                z-index: 10020;
+                font-size: 16px;
+            `;
+            
+            notification.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 20px;">📚</div>
+                <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; color: #ffd700;">
+                    MUNDO SECRETO ARCHIVADO
+                </div>
+                <div style="margin-bottom: 20px; line-height: 1.6;">
+                    Los 30 días han terminado. El mundo secreto del pescador<br>
+                    ha sido permanentemente archivado en GitHub para<br>
+                    preservar esta experiencia única.
+                </div>
+                <div style="margin-bottom: 20px; color: #ccc;">
+                    Puedes encontrar el código completo en:<br>
+                    <strong style="color: #ffd700;">github.com/niche-fruits-clicker/secret-world</strong>
+                </div>
+                <button onclick="this.parentElement.remove()" style="
+                    background: linear-gradient(135deg, #000000, #333333);
+                    border: 2px solid #fff;
+                    padding: 15px 30px;
+                    border-radius: 10px;
+                    color: #fff;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 16px;
+                ">ENTENDIDO</button>
+            `;
+            
+            document.body.appendChild(notification);
+        }
+
+        // Producers
+        let producerList = [
+            { id: 'farmer', name: 'Granjero', emoji: '👨‍🌾', price: 15, production: 0.1 },
+            { id: 'tree', name: 'Árbol', emoji: '🌳', price: 100, production: 1 },
+            { id: 'orchard', name: 'Huerto', emoji: '🍎', price: 1100, production: 8 },
+            { id: 'plantation', name: 'Plantación', emoji: '🏞️', price: 12000, production: 47 },
+            { id: 'factory', name: 'Fábrica', emoji: '🏭', price: 130000, production: 260 }
+        ];
+
+        let secretProducerList = [
+            { id: 'fisherman', name: 'Pescador', emoji: '🎣', price: 50, production: 0.5 },
+            { id: 'fishing_boat', name: 'Barco Pesquero', emoji: '⛵', price: 500, production: 3 },
+            { id: 'fishing_fleet', name: 'Flota Pesquera', emoji: '🚢', price: 5000, production: 15 },
+            { id: 'aquarium', name: 'Acuario', emoji: '🐠', price: 50000, production: 80 }
+        ];
+
+        let worldData = [
+            { id: 0, name: 'Mundo Tropical', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            { id: 1, name: 'Huerto Clásico', background: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)' },
+            { id: 2, name: 'Jardín Cítrico', background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+            { id: 3, name: 'Dimensión Mística', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }
+        ];
+
+        let fruitTypes = [
+            { id: 0, emoji: '🥭', name: 'Mango' },
+            { id: 1, emoji: '🍎', name: 'Manzana' },
+            { id: 2, emoji: '🍐', name: 'Pera' },
+            { id: 3, emoji: '🍊', name: 'Naranja' },
+            { id: 4, emoji: '🍋', name: 'Limón' },
+            { id: 5, emoji: '🍇', name: 'Uvas' },
+            { id: 6, emoji: '🫐', name: 'Arándanos' }
+        ];
+
+        let rebirthUpgrades = [
+            { id: 0, name: 'Multiplicador Base', cost: 1, effect: 0.1, owned: 0 },
+            { id: 1, name: 'Boost Productor', cost: 2, effect: 0.05, owned: 0 },
+            { id: 2, name: 'Suerte Token', cost: 3, effect: 0.001, owned: 0 },
+            { id: 3, name: 'Velocidad Auto', cost: 5, effect: 0.1, owned: 0 }
+        ];
+
+        // Secret Music System
+        let audioContext = null;
+        let isPlaying = false;
+        let masterGain = null;
+        let secretMusicVolume = 0.5;
+
+        // Musical notes in Hz - Minor key for melancholy feel
+        const notes = {
+            C3: 130.81, D3: 146.83, Eb3: 155.56, F3: 174.61, G3: 196.00, 
+            Ab3: 207.65, Bb3: 233.08, C4: 261.63, D4: 293.66, Eb4: 311.13,
+            F4: 349.23, G4: 392.00, Ab4: 415.30, Bb4: 466.16, C5: 523.25
+        };
+
+        // Melody sequence inspired by melancholic style
+        const melodySequence = [
+            { note: 'C4', duration: 1.0 }, { note: 'Eb4', duration: 0.5 }, 
+            { note: 'G4', duration: 0.5 }, { note: 'F4', duration: 1.5 },
+            { note: 'Eb4', duration: 0.5 }, { note: 'D4', duration: 1.0 },
+            { note: 'C4', duration: 2.0 }, { note: 'Ab3', duration: 0.5 },
+            { note: 'Bb3', duration: 0.5 }, { note: 'C4', duration: 1.0 },
+            { note: 'D4', duration: 0.5 }, { note: 'Eb4', duration: 1.5 }
+        ];
+
+        const bassLine = [
+            { note: 'C3', duration: 4.0 }, { note: 'Ab3', duration: 4.0 },
+            { note: 'F3', duration: 4.0 }, { note: 'G3', duration: 4.0 }
+        ];
+
+        function initializeSecretMusic() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create master gain node
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = secretMusicVolume * 0.3;
+                
+                return true;
+            } catch (e) {
+                console.warn('Web Audio API no soportada:', e);
+                return false;
+            }
+        }
+
+        function createTone(frequency, startTime, duration, type = 'sine', volume = 0.1) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filterNode = audioContext.createBiquadFilter();
+
+            // Setup filter for warmer sound
+            filterNode.type = 'lowpass';
+            filterNode.frequency.value = frequency * 2;
+            filterNode.Q.value = 1;
+
+            // Connect nodes
+            oscillator.connect(filterNode);
+            filterNode.connect(gainNode);
+            gainNode.connect(masterGain);
+
+            // Configure oscillator
+            oscillator.type = type;
+            oscillator.frequency.value = frequency;
+
+            // ADSR envelope
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(volume * 0.7, startTime + duration * 0.3);
+            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+
+            return { oscillator, gainNode, filterNode };
+        }
+
+        function createReverb() {
+            const convolver = audioContext.createConvolver();
+            const reverbTime = 2;
+            const sampleRate = audioContext.sampleRate;
+            const length = sampleRate * reverbTime;
+            const impulse = audioContext.createBuffer(2, length, sampleRate);
+
+            for (let channel = 0; channel < 2; channel++) {
+                const channelData = impulse.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
+                }
+            }
+
+            convolver.buffer = impulse;
+            return convolver;
+        }
+
+        function playMelody() {
+            let currentTime = audioContext.currentTime;
+            const reverb = createReverb();
+            
+            // Add reverb to master gain
+            const reverbGain = audioContext.createGain();
+            reverbGain.gain.value = 0.2;
+            masterGain.connect(reverb);
+            reverb.connect(reverbGain);
+            reverbGain.connect(audioContext.destination);
+
+            function playSequence() {
+                if (!isPlaying) return;
+
+                // Play melody
+                melodySequence.forEach((note, i) => {
+                    const startTime = currentTime + (i > 0 ? melodySequence.slice(0, i).reduce((sum, n) => sum + n.duration, 0) : 0);
+                    createTone(notes[note.note], startTime, note.duration, 'triangle', 0.15);
+                });
+
+                // Play bass line
+                bassLine.forEach((note, i) => {
+                    const startTime = currentTime + (i * 4);
+                    createTone(notes[note.note], startTime, note.duration, 'sawtooth', 0.08);
+                });
+
+                // Add atmospheric pads
+                ['C4', 'Eb4', 'G4'].forEach((note, i) => {
+                    createTone(notes[note], currentTime, 16, 'sine', 0.03);
+                });
+
+                // Schedule next iteration
+                const totalDuration = melodySequence.reduce((sum, note) => sum + note.duration, 0);
+                currentTime += totalDuration;
+                
+                setTimeout(() => {
+                    if (isPlaying) playSequence();
+                }, totalDuration * 1000);
+            }
+
+            playSequence();
+        }
+
+        function playSecretWorldMusic() {
+            if (!audioContext && !initializeSecretMusic()) {
+                return false;
+            }
+
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            isPlaying = true;
+            playMelody();
+            return true;
+        }
+
+        function stopSecretWorldMusic() {
+            isPlaying = false;
+            
+            // Fade out
+            if (masterGain) {
+                masterGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+                setTimeout(() => {
+                    if (masterGain) {
+                        masterGain.gain.value = secretMusicVolume * 0.3;
+                    }
+                }, 500);
+            }
+        }
+
+        function toggleSecretMusic() {
+            if (isPlaying) {
+                stopSecretWorldMusic();
+                showNotification('Música del mundo secreto pausada', 'secret');
+            } else {
+                if (playSecretWorldMusic()) {
+                    showNotification('Música procedural del Pescador Solitario iniciada', 'secret');
+                } else {
+                    showNotification('Error: No se pudo iniciar la música', 'error');
+                }
+            }
+        }
+
+        function adjustSecretVolume() {
+            secretMusicVolume = secretMusicVolume >= 1 ? 0.1 : secretMusicVolume + 0.2;
+            
+            if (masterGain) {
+                masterGain.gain.value = secretMusicVolume * 0.3;
+            }
+            
+            showNotification('Volumen: ' + Math.round(secretMusicVolume * 100) + '%', 'secret');
+        }
+
+        // Secret World Access Functions
+        function attemptSecretWorldAccess() {
+            if (gameData.secretWorldExpired) {
+                showNotification('El mundo secreto ha expirado y se archivó en GitHub', 'error');
+                return;
+            }
+
+            if (gameData.fruits < SECRET_WORLD_COST) {
+                showNotification('Necesitas ' + formatNumber(SECRET_WORLD_COST) + ' frutas para acceder', 'error');
+                return;
+            }
+            
+            document.getElementById('secretPasswordPanel').classList.add('visible');
+        }
+
+        function attemptSecretWorldEntry() {
+            const passwordInput = document.getElementById('secretPasswordInput');
+            const enteredPassword = passwordInput.value.toUpperCase();
+            
+            if (gameData.fruits < SECRET_WORLD_COST) {
+                showNotification('No tienes suficientes frutas!', 'error');
+                return;
+            }
+            
+            if (enteredPassword !== SECRET_PASSWORD) {
+                showNotification('Contraseña incorrecta!', 'error');
+                return;
+            }
+            
+            gameData.fruits -= SECRET_WORLD_COST;
+            closeSecretPanel();
+            enterSecretWorld();
+            showNotification('¡Bienvenido al Mundo Secreto del Pescador!');
+        }
+
+        function closeSecretPanel() {
+            document.getElementById('secretPasswordPanel').classList.remove('visible');
+            document.getElementById('secretPasswordInput').value = '';
+        }
+
+        // Core Game Functions
+        function clickFruit() {
+            let power = gameData.multiplier * gameData.rebirthMultiplier;
+            
+            if (gameData.secretWorldActive) {
+                gameData.fishCaught++;
+                power *= 2;
+                
+                // Apply secret upgrades
+                if (gameData.secretUpgrades.fishingNet > 0) {
+                    power *= (1 + gameData.secretUpgrades.fishingNet * 2);
+                }
+                
+                showEffect('🎣 +' + Math.floor(power) + ' (Pez capturado!)');
+                
+                // Rare fish bonus
+                if (Math.random() < 0.1) {
+                    let bonus = power * 5;
+                    showNotification('¡Pez raro capturado! +' + formatNumber(bonus) + ' frutas extra');
+                    gameData.fruits += bonus;
+                    gameData.totalFruits += bonus;
+                }
+            } else {
+                showEffect('+' + Math.floor(power));
+            }
+            
+            gameData.fruits += power;
+            gameData.totalFruits += power;
+            
+            // Random token chance
+            let tokenChance = 0.001 + (rebirthUpgrades[2].owned * rebirthUpgrades[2].effect);
+            if (gameData.secretWorldActive) tokenChance *= 2;
+            
+            if (Math.random() < tokenChance) {
+                gameData.tokens++;
+                showNotification('¡Token encontrado!');
+            }
+            
+            // Random multiplier boost
+            let multChance = gameData.secretWorldActive ? 0.02 : 0.01;
+            if (Math.random() < multChance) {
+                let mult = [2, 3, 4][Math.floor(Math.random() * 3)];
+                gameData.multiplier *= mult;
+                showNotification('¡Mutación ' + mult + 'x! Total: ' + formatNumber(gameData.multiplier) + 'x');
+            }
+            
+            updateDisplay();
+            updateSecretWorldAccess();
+        }
+
+        function getProduction() {
+            let total = 0;
+            let rebirthBoost = 1 + (rebirthUpgrades[1].owned * rebirthUpgrades[1].effect);
+            let speedBoost = 1 + (rebirthUpgrades[3].owned * rebirthUpgrades[3].effect);
+            
+            let currentProducers = gameData.secretWorldActive ? secretProducerList : producerList;
+            
+            currentProducers.forEach(p => {
+                let owned = gameData.producers[p.id] || 0;
+                let production = owned * p.production * rebirthBoost * speedBoost * gameData.rebirthMultiplier;
+                
+                // Apply secret upgrades
+                if (gameData.secretWorldActive && gameData.secretUpgrades.goldenHook > 0) {
+                    production *= (1 + gameData.secretUpgrades.goldenHook * 5);
+                }
+                
+                total += production;
+            });
+            
+            if (gameData.secretWorldActive) {
+                total *= 1.5;
+            }
+            
+            return total;
+        }
+
+        function buyProducer(id) {
+            let currentProducers = gameData.secretWorldActive ? secretProducerList : producerList;
+            let producer = currentProducers.find(p => p.id === id);
+            if (!producer) return;
+            
+            let owned = gameData.producers[id] || 0;
+            let cost = Math.floor(producer.price * Math.pow(1.15, owned));
+            
+            if (gameData.fruits >= cost) {
+                gameData.fruits -= cost;
+                gameData.producers[id] = owned + 1;
+                showNotification(producer.name + ' comprado!');
+                renderProducers();
+                updateDisplay();
+            }
+        }
+
+        function buyGlobal(type) {
+            let costs = {
+                'tokenChest': 100,
+                'tortilla': 200,
+                'mutation': 500
+            };
+            
+            let cost = costs[type];
+            if (!cost || gameData.fruits < cost) {
+                showNotification('No tienes suficientes frutas', 'error');
+                return;
+            }
+            
+            gameData.fruits -= cost;
+            
+            switch(type) {
+                case 'tokenChest':
+                    gameData.tokenChests++;
+                    showNotification('¡Token Chest comprado!');
+                    break;
+                case 'tortilla':
+                    gameData.tortillas++;
+                    showNotification('¡Tortilla comprada!');
+                    break;
+                case 'mutation':
+                    gameData.mutations++;
+                    showNotification('¡Mutación comprada!');
+                    break;
+            }
+            
+            updateDisplay();
+            renderProducers();
+        }
+
+        function buySecretUpgrade(upgradeId) {
+            let costs = {
+                'fishingNet': 1000,
+                'goldenHook': 5000
+            };
+            
+            let cost = costs[upgradeId];
+            if (!cost || gameData.fishCaught < cost) {
+                showNotification('No tienes suficientes peces capturados', 'error');
+                return;
+            }
+            
+            gameData.fishCaught -= cost;
+            gameData.secretUpgrades[upgradeId]++;
+            
+            let names = {
+                'fishingNet': 'Red de Pesca Mágica',
+                'goldenHook': 'Anzuelo Dorado'
+            };
+            
+            showNotification('¡' + names[upgradeId] + ' mejorada! Nivel ' + gameData.secretUpgrades[upgradeId]);
+            updateDisplay();
+        }
+
+        // Secret World Functions
+        function enterSecretWorld() {
+            document.body.classList.add('secret-world');
+            gameData.secretWorldActive = true;
+            
+            // Initialize timer if first entry
+            if (!gameData.secretWorldStartTime) {
+                initializeSecretWorldTimer();
+                
+                // Start countdown display
+                document.getElementById('secretCountdown').classList.add('visible');
+                countdownInterval = setInterval(updateCountdown, 1000);
+            }
+            
+            document.getElementById('gameTitle').textContent = 'Pescador Solitario';
+            document.getElementById('gameSubtitle').textContent = 'El Lago de los Recuerdos';
+            document.getElementById('clickInstruction').innerHTML = '<strong>HAZ CLICK PARA PESCAR</strong>';
+            
+            document.getElementById('mainFruitEmoji').style.display = 'none';
+            document.getElementById('fishingFigure').style.display = 'block';
+            document.getElementById('secretFishCounter').style.display = 'block';
+            document.getElementById('secretWorldShop').style.display = 'block';
+            
+            renderProducers();
+            
+            // Show entry message
+            showNotification('Mundo Secreto del Pescador activado', 'secret');
+            
+            // Try to play music silently - if it fails, user can activate manually
+            setTimeout(() => {
+                playSecretWorldMusic();
+            }, 1000);
+        }
+
+        function exitSecretWorld() {
+            document.body.classList.remove('secret-world');
+            gameData.secretWorldActive = false;
+            
+            document.getElementById('gameTitle').textContent = 'Niche Fruits Clicker';
+            document.getElementById('gameSubtitle').textContent = 'Imperio de Frutas Exóticas';
+            document.getElementById('clickInstruction').innerHTML = '<strong>HAZ CLICK EN LA FRUTA</strong>';
+            
+            document.getElementById('mainFruitEmoji').style.display = 'block';
+            document.getElementById('fishingFigure').style.display = 'none';
+            document.getElementById('secretFishCounter').style.display = 'none';
+            document.getElementById('secretWorldShop').style.display = 'none';
+            document.getElementById('secretCountdown').classList.remove('visible');
+            
+            // Stop countdown if running
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            
+            stopSecretWorldMusic();
+            
+            updateWorldBackground();
+            updateFruitDisplay();
+            renderProducers();
+            renderWorldSelector();
+            renderFruitSelector();
+        }
+
+        // Rebirth System
+        function canRebirth() {
+            return gameData.totalFruits >= 100000;
+        }
+
+        function calculateRebirthPoints() {
+            if (!canRebirth()) return 0;
+            return Math.floor(Math.sqrt(gameData.totalFruits / 10000));
+        }
+
+        function performRebirth() {
+            if (!canRebirth()) {
+                showNotification('Necesitas 100,000 frutas totales para renacer', 'error');
+                return;
+            }
+
+            let points = calculateRebirthPoints();
+            let confirmMsg = '¿Renacer y perder todo el progreso actual?\n\nGanarás: ' + points + ' Puntos de Renacimiento\nRenacimiento: ' + (gameData.rebirths + 1) + '\n\nEsto reseteará frutas, productores y multiplicadores.';
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // Reset current progress
+            gameData.fruits = 0;
+            gameData.totalFruits = 0;
+            gameData.tokens = 0;
+            gameData.tokenChests = 0;
+            gameData.tortillas = 0;
+            gameData.cats = 0;
+            gameData.mutations = 0;
+            gameData.producers = {};
+            gameData.multiplier = 1;
+            
+            // Add rebirth progress
+            gameData.rebirths++;
+            gameData.rebirthPoints += points;
+            
+            updateUnlocks();
+            calculateRebirthMultiplier();
+            
+            updateWorldBackground();
+            updateFruitDisplay();
+            renderProducers();
+            renderRebirthShop();
+            renderWorldSelector();
+            renderFruitSelector();
+            updateDisplay();
+            
+            showNotification('¡RENACIMIENTO ' + gameData.rebirths + '! +' + points + ' Puntos de Renacimiento');
+            
+            if (gameData.rebirths === 1) {
+                setTimeout(() => showNotification('¡Huerto Clásico y Manzana desbloqueados!'), 2000);
+            }
+        }
+
+        function updateUnlocks() {
+            gameData.unlockedWorlds = [0];
+            gameData.unlockedFruits = [0];
+            
+            if (gameData.rebirths >= 1) {
+                gameData.unlockedWorlds.push(1);
+                gameData.unlockedFruits.push(1);
+            }
+            if (gameData.rebirths >= 2) {
+                gameData.unlockedFruits.push(2);
+            }
+            if (gameData.rebirths >= 3) {
+                gameData.unlockedWorlds.push(2);
+                gameData.unlockedFruits.push(3, 4);
+            }
+            if (gameData.rebirths >= 4) {
+                gameData.unlockedWorlds.push(3);
+                gameData.unlockedFruits.push(5, 6);
+            }
+        }
+
+        function calculateRebirthMultiplier() {
+            let multiplier = 1;
+            multiplier += rebirthUpgrades[0].owned * rebirthUpgrades[0].effect;
+            multiplier += gameData.rebirths * 0.1;
+            gameData.rebirthMultiplier = multiplier;
+        }
+
+        function buyRebirthUpgrade(upgradeId) {
+            let upgrade = rebirthUpgrades[upgradeId];
+            let cost = upgrade.cost + upgrade.owned * 2;
+            
+            if (gameData.rebirthPoints >= cost) {
+                gameData.rebirthPoints -= cost;
+                upgrade.owned++;
+                
+                calculateRebirthMultiplier();
+                updateDisplay();
+                renderRebirthShop();
+                
+                showNotification(upgrade.name + ' mejorado! Nivel ' + upgrade.owned);
+            } else {
+                showNotification('Necesitas ' + cost + ' puntos de renacimiento', 'error');
+            }
+        }
+
+        function switchWorld(worldId) {
+            if (!gameData.unlockedWorlds.includes(worldId)) {
+                showNotification('Mundo no desbloqueado', 'error');
+                return;
+            }
+            
+            if (gameData.currentWorld === worldId) {
+                showNotification('Ya estás en este mundo');
+                return;
+            }
+            
+            if (gameData.secretWorldActive) {
+                exitSecretWorld();
+            }
+            
+            gameData.currentWorld = worldId;
+            updateWorldBackground();
+            renderWorldSelector();
+            showNotification('Cambiado a ' + worldData[worldId].name);
+        }
+
+        function switchFruit(fruitId) {
+            if (!gameData.unlockedFruits.includes(fruitId)) {
+                showNotification('Fruta no desbloqueada', 'error');
+                return;
+            }
+            
+            if (gameData.currentFruitType === fruitId) {
+                showNotification('Ya estás usando esta fruta');
+                return;
+            }
+            
+            gameData.currentFruitType = fruitId;
+            updateFruitDisplay();
+            renderFruitSelector();
+            showNotification('¡Cambiado a ' + fruitTypes[fruitId].name + '!');
+        }
+
+        // Rendering Functions
+        function renderProducers() {
+            let container = document.getElementById('producerShop');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            let currentProducers = gameData.secretWorldActive ? secretProducerList : producerList;
+            
+            currentProducers.forEach(producer => {
+                let owned = gameData.producers[producer.id] || 0;
+                let cost = Math.floor(producer.price * Math.pow(1.15, owned));
+                let canAfford = gameData.fruits >= cost;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (canAfford ? 'affordable' : 'expensive');
+                
+                div.innerHTML = 
+                    '<div style="font-size: 2rem; margin-right: 12px;">' + producer.emoji + '</div>' +
+                    '<div>' +
+                        '<div style="font-weight: 700; color: #fff;">' + producer.name + '</div>' +
+                        '<div style="color: #ccc; font-size: 0.9rem;">' + formatNumber(cost) + ' frutas - Owned: ' + owned + '</div>' +
+                    '</div>';
+                
+                if (canAfford) {
+                    div.onclick = () => buyProducer(producer.id);
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function renderRebirthShop() {
+            let container = document.getElementById('rebirthShop');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (gameData.rebirths === 0) {
+                container.innerHTML = '<div style="color: #ccc; text-align: center; padding: 20px; font-style: italic;">Haz tu primer renacimiento para desbloquear mejoras</div>';
+                return;
+            }
+            
+            rebirthUpgrades.forEach(upgrade => {
+                let cost = upgrade.cost + (upgrade.owned * 2);
+                let canAfford = gameData.rebirthPoints >= cost;
+                
+                let div = document.createElement('div');
+                div.className = 'shop-item ' + (canAfford ? 'affordable' : 'expensive');
+                
+                div.innerHTML = 
+                    '<div style="font-size: 2rem; margin-right: 12px;">⭐</div>' +
+                    '<div>' +
+                        '<div style="font-weight: 700; color: #fff;">' + upgrade.name + '</div>' +
+                        '<div style="color: #ccc; font-size: 0.9rem;">Costo: ' + cost + ' PR - Nivel: ' + upgrade.owned + '</div>' +
+                        '<div style="color: #ffd700; font-size: 0.8rem;">Efecto: +' + (upgrade.effect * 100).toFixed(1) + '%</div>' +
+                    '</div>';
+                
+                if (canAfford) {
+                    div.onclick = () => buyRebirthUpgrade(upgrade.id);
+                    div.style.cursor = 'pointer';
+                } else {
+                    div.style.cursor = 'not-allowed';
+                }
+                
+                container.appendChild(div);
+            });
+        }
+
+        function renderWorldSelector() {
+            let container = document.getElementById('worldSelector');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            worldData.forEach(world => {
+                let isUnlocked = gameData.unlockedWorlds.includes(world.id);
